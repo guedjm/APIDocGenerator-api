@@ -1,0 +1,390 @@
+api:
+  name: 'Roadtripper API'
+  description: |
+          Roadtripper is a project launched by 4 roomates: Jennifer Briesach, Remy Hillairet, Philippe Volpe et Maxime Guedj.;;;
+          It is a mobile application allowing users to share information while driving to the same destination.;;;
+          **Roatripper API** is a REST API developped in node.js dialing with client applications.
+
+  paragraphs:
+    -
+      Introduction:
+        text: |
+          Roadtripper API is a REST API, each request use the **HTTP** protocol.;;;
+          Each request paths (exept {{/ping:get-ping}}) must be prefixed by the current major version of the api server. Since we are in version **1.-.-**, paths
+          must be prefixed by **/v1**;;;
+          For example, the url of the login request ( {{/auth/login:get-auth-login}} ) is */v1/auth/login*
+    -
+      Security:
+        text: |
+          The API handle two type of authorization. To know which one you have to implement for a request,
+          look at the request TAGs (top-right coner of the request description).
+        sub:
+          -
+            Client Auth:
+              text: |
+                Request need to be authenticated by HTTP Basic Authentification. Add your client secret to the HTTP header of your request:
+
+
+                ```
+
+                Authorization : Basic YOUR_CLIENT_SECRET
+
+                ```
+
+          -
+            User Auth:
+              text: |
+                Request need to bo authenticated by Access token. Add your accessToken to the HTTP header of your request:
+
+                ```
+
+                Authorization : Bearer YOUR_ACCESS_TOKEN
+
+                ```
+
+                To obtain an accessToken, use the {{/auth/login:get-auth-login}} route.
+
+  tags:
+    -
+      Client Auth:
+        link: paragraph-security-client-auth
+
+    -
+      User Auth:
+        link: paragraph-security-user-auth
+
+  routes:
+    -
+      Auth:
+        text: |
+          Requests related to authorization
+        url:
+          -
+            /auth/login:
+              get:
+                summary: Login the user and reply an accessToken
+                description: This operation register the user if it is the first time he uses the application.
+                tags:
+                  -
+                    Client Auth
+                parameters:
+                  -
+                    facebookToken:
+                      description: The facebook access token
+                      required: true
+                      in: body
+                      type: string
+                responses:
+                  -
+                    200:
+                      description: Operation Success
+                      type: Access Token Reply
+                errors:
+                  - Invalid Request
+                  - Client Auth
+                  - Fb Invalid Token
+
+          -
+            /auth/token:
+              get:
+                summary: Get information about the current token (included in the request header)
+                tags:
+                  -
+                    User Auth
+                responses:
+                  -
+                    200:
+                      description: Valid token
+                      type: Token Information Reply
+                errors:
+                  - User Auth
+                  - Expired Token
+                  - Wrong Token
+
+          -
+            /auth/renew:
+              get:
+                summary: Get a new access token
+                description: Exchange an expired access token and give a new one
+                tags:
+                  - Client Auth
+                parameters:
+                  -
+                    access_token:
+                      description: The exipired access token
+                      required: true
+                      type: string
+                      in: query
+                responses:
+                  -
+                    200:
+                      description: Operation sucess
+                      type: Access Token Reply
+                errors:
+                  - Invalid Request
+                  - Client Auth
+                  - Wrong Token
+
+          -
+            /auth/facebooktoken:
+              get:
+                summary: Get the current facebook token
+                description: Return the current facebook token
+                responses:
+                  -
+                    200:
+                      description: Operation success
+                      type: string
+                errors:
+                  - User Auth
+                  - Expired Token
+                  - Wrong Token
+                tags:
+                  - User Auth
+
+              post:
+                summary: Update the server side facebook token
+                parameters:
+                  -
+                    facebookToken:
+                      description: Faceboook token
+                      in: body
+                      required: true
+                      type: string
+                responses:
+                  -
+                    200:
+                      description: Token updated
+                      type: string
+                tags:
+                  - User Auth
+
+                errors:
+                  - User Auth
+                  - Expired Token
+                  - Wrong Token
+
+
+
+    -
+      Client:
+        text: Request related to client
+        url:
+          -
+            /client:
+              post:
+                summary: Create a new client
+                description: This operation create a new client. Only client of type 3 (admin) are allowed to perform this operation
+                tags:
+                  - Client Auth
+                parameters:
+                  -
+                    name:
+                      description: Client name
+                      in: body
+                      type: string
+                      required: true
+                  -
+                    type:
+                      description: Client type
+                      in: body
+                      type: string
+                      required: true
+
+                responses:
+                  -
+                    200:
+                      description: Client created
+                      type: Client
+                errors:
+                  - Invalid Client
+                  - Client Auth
+
+    -
+      User:
+        text: Requests related to users
+        url:
+          -
+            /user/info:
+              get:
+                summary: Get user information
+                responses:
+                  -
+                    200:
+                      description: User information issued
+                      type: User Info
+                errors:
+                  - User Auth
+                  - Expired Token
+                  - Wrong Token
+                tags:
+                  - User Auth
+
+          -
+            /user/friend:
+              get:
+                summary: Get user friends
+                responses:
+                  -
+                    200:
+                      description: User information issued
+                      type: Friend List
+                errors:
+                  - User Auth
+                  - Expired Token
+                  - Wrong Token
+                tags:
+                  - User Auth
+
+    -
+      /ping:
+        get:
+          summary: Simply reply "pong"
+          description: Allow to check api is running
+          responses:
+            -
+              200:
+                description: Server is running
+                type: none
+
+            -
+              400:
+                description: Server is down
+                type: none
+
+  errors:
+    -
+      Invalid request:
+        status: 400
+        code: 1
+        message: Invalid request, (parameters missing)
+        fix: Check request parameters twice
+    -
+      Client auth:
+        status: 401
+        code: 1
+        subcode: 1
+        message: Request need to be authorized by Client Auth (check documentation for more details)
+        fix: See {{Client Auth paragraph:paragraphs-security-client-auth}}
+
+    -
+      User auth:
+        status: 401
+        code: 1
+        subcode: 2
+        message: Request need to be authorized by User Auth (check documentation for more details)
+        fix: See {{User Auth paragraph:paragraphs-security-user-auth}}
+
+    -
+      Invalid client:
+        status: 401
+        code: 2
+        message: Client cannot perform this action
+        fix: Read documentation twice
+
+    -
+      Expired token:
+        status: 401
+        code: 2
+        subcode: 1
+        message: Token expired, please use POST /auth/renew to obtain a new token
+        fix: See {{POST /auth/renew:post-auth-renew}}
+
+    -
+      Wrong token:
+        status: 401
+        code: 2
+        subcode: 2
+        message: Invalid token, please use login again to get a new token
+        fix: See {{User Auth paragraph:paragraphs-security-user-auth}}
+
+    -
+      Fb invalid token:
+        status: 401
+        code: 3
+        subcode: 1
+        message: Invalid facebook access token, please update facebook token (POST /auth/facebooktoken)
+        fix: See {{POST /auth/facebooktoken:post-auth-facebooktoken}}
+
+    -
+      Not Found:
+        status: 404
+        code: 1
+        message: Not found
+
+    -
+      Internal server error:
+        status: 500
+        code: 1
+        message: Internal server error
+        fix: Server side issue ...
+
+    -
+      Internal error fb:
+        status: 500
+        code: 1
+        message: Internal server error (facebook reply)
+        fix: Server side issue whil reading facebook api reply
+
+
+
+  objects:
+    -
+      Error:
+        description: 'Error Object'
+        obj:
+          error:
+            code: 0
+            subcode: 0
+            message: ""
+    -
+      Access token reply:
+        description: The {{/auth/login:get-auth-login}} reply
+        obj:
+          access_token: ""
+
+    -
+      Token information reply:
+        description: The {{/auth/token:get-auth-token}} reply
+        obj:
+          token:
+            token: ""
+            deliveryDate: ""
+            expirationDate: ""
+            renewExpirationDate: ""
+          client:
+            name: ""
+            id: ""
+          user:
+            publicId: ""
+            name: ""
+
+    -
+      User info:
+        description: User information
+        obj:
+          facebookId: ""
+          publicId: ""
+          firstName: ""
+          lastName: ""
+          name: ""
+
+    -
+      Friend list:
+        description: Friend list
+        obj:
+            -
+              facebookId: ""
+              publicId: ""
+              firstName: ""
+              lastName: ""
+              name: ""
+
+
+    -
+      Client:
+        description: Client information
+        obj:
+          name: ""
+          key: ""
+          secret: ""
