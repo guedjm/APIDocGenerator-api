@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0
+
+* New stable version
+
+*guedj_m, Sun Jun 19 2016 17:47:32 GMT+0200 (CEST)*
+
+---
 ## 0.2.0
 
 * First working implementation

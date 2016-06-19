@@ -1,5 +1,6 @@
 "use strict";
 
+const ncp: any = require("ncp");
 import { join, dirname } from "path";
 import { accessSync, readFileSync, writeFileSync, mkdirSync, F_OK } from "fs";
 import { APIDocGenerator, GeneratedFile } from "api-doc-generator-pkg";
@@ -9,7 +10,8 @@ export class APIDocGen {
   public static generateDoc(definitionPath: string,
     changelogPath: string,
     version: string,
-    destDir: string): void {
+    destDir: string,
+    callback: (err: any) => void): void {
 
     const docGenerator: APIDocGenerator = new APIDocGenerator();
     const definitionStr: string = readFileSync(definitionPath, "utf8");
@@ -37,6 +39,10 @@ export class APIDocGen {
       writeFileSync(join(destDir, file.path), file.content);
 
       console.log("Writing " + join(destDir, file.path) + " ...");
+    });
+
+    ncp(docGenerator.publicDir, destDir, function(err: any): void {
+      callback(err);
     });
   }
 }
