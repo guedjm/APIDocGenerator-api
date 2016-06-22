@@ -14,7 +14,7 @@
   "author": "Maxime Guedj",
   "license": "ISC",
   "dependencies": {
-    "api-doc-generator-pkg": "https://raw.githubusercontent.com/guedjm/APIDocGenerator-pkg/master/release/api-doc-generator-pkg.tgz",
+    "api-doc-generator-pkg": "git+ssh://git@github.com/guedjm/APIDocGenerator-pkg.git",
     "ncp": "^2.0.0"
   },
   "devDependencies": {
