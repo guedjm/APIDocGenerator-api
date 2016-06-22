@@ -34,6 +34,4 @@ node_modules
 .idea
 .vscode
 typings
-index.js
-index.d.ts
 lib/**
