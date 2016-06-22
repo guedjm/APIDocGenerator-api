@@ -1,5 +1,5 @@
 {
-  "name": "api-doc-generator-api",
+  "name": "doc-api-gen",
   "version": "1.0.0",
   "description": "Package to generate Uber style api documentation",
   "main": "index.js",
